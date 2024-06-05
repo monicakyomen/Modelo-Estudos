@@ -1,0 +1,84 @@
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import logging
+import matplotlib.pyplot as plt
+data = pd.read_csv('C:\\Users\\wilky\\Documents\\kc_house_data.csv')
+display(data)
+
+
+colunas_vazias = data.columns[data.isnull().all()] # Identifica colunas que têm todos os valores nulos
+df_sem_vazias = data.dropna() # Remove todas as linhas que contêm valores nulos
+print("Colunas disponíveis no DataFrame:", df_sem_vazias.columns) # Imprime as colunas disponíveis no DataFrame após
+#a remoção das linhas com valores nulos
+Colunas disponíveis no DataFrame: Index(['price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors',
+       'waterfront', 'view', 'condition', 'grade', 'sqft_above',
+       'sqft_basement', 'yr_built', 'yr_renovated', 'sqft_living15',
+       'sqft_lot15'],
+      dtype='object')
+display(df_sem_vazias)
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+X = df_sem_vazias[['bedrooms','sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view','condition', 'grade',
+         'sqft_above', 'sqft_basement'
+       , 'yr_built', 'yr_renovated', 'sqft_living15', 'sqft_lot15']]
+
+# Variável alvo (o que queremos prever)
+y = df_sem_vazias['price']
+
+# Dividindo os dados em conjuntos de treino e teste (80% treino, 20% teste)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+modelo = LinearRegression() #Cria o modelo
+modelo.fit(X_train, y_train) #Treina o modelo com os dados de teste
+LinearRegression()
+y_pred = modelo.predict(X_test) # Fazendo previsões no conjunto de teste
+# Calculando o erro quadrático médio (MSE) e o R² no conjunto de teste
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Calculando R² para os conjuntos de teste
+r2_treino = r2_score(y_train, modelo.predict(X_train))
+
+
+print("Erro quadrático médio no conjunto de teste:", mse)
+print("O R2 no conjunto de teste:", r2)
+print("R² no conjunto de treino:", r2_treino)
+Erro quadrático médio no conjunto de teste: 52454957354.72336
+O R2 no conjunto de teste: 0.6530222375414552
+R² no conjunto de treino: 0.6502147860299341
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+
+# Previsões no treino
+y_train_pred = modelo.predict(X_train)
+# Previsões no teste
+y_test_pred = modelo.predict(X_test)
+
+# Cálculo do R^2
+r2_treino = r2_score(y_train, y_train_pred)
+r2_teste = r2_score(y_test, y_test_pred)
+
+print(f"R² no treino: {r2_treino}")
+print(f"R² no teste: {r2_teste}")
+
+# Gráficos de dispersão
+plt.figure(figsize=(14, 6))
+
+# Gráfico de dispersão para o treino
+plt.subplot(1, 2, 1)
+plt.scatter(y_train, y_train_pred, alpha=0.3)
+plt.plot([min(y_train), max(y_train)], [min(y_train), max(y_train)], 'r--')
+plt.xlabel('Valores Reais (Treino)')
+plt.ylabel('Valores Preditos (Treino)')
+plt.title('Treino: Valores Reais vs. Valores Preditos')
+
+# Gráfico de dispersão para o teste
+plt.subplot(1, 2, 2)
+plt.scatter(y_test, y_test_pred, alpha=0.3)
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], 'r--')
+plt.xlabel('Valores Reais (Teste)')
+plt.ylabel('Valores Preditos (Teste)')
+plt.title('Teste: Valores Reais vs. Valores Preditos')
+
+plt.show()
